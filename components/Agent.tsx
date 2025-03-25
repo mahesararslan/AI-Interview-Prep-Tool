@@ -25,6 +25,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const [messages, setMessages] = useState<SavedMessage[]>([]);
 
     useEffect(() => {
+        console.log("UserID", userId);  
         const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
         const onCallEnd = () => setCallStatus(CallStatus.FINISHED);
 

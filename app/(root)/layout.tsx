@@ -4,21 +4,18 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
 import { isAuthenticated } from "@/lib/actions/auth.action";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Layout = async ({ children }: { children: ReactNode }) => {
   const isUserAuthenticated = await isAuthenticated();
-  if (!isUserAuthenticated) redirect("/sign-in");
+  // if (!isUserAuthenticated) redirect("/sign-in");
 
   return (
-    <div className="root-layout">
-      <nav>
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo2.png" alt="MockMate Logo" width={200} height={200} />
-          {/* <h2 className="text-primary-100 font-extrabold">Mock-Mate</h2> */}
-        </Link>
-      </nav>
-
+    <div >
+      <Navbar isLoggedIn={isUserAuthenticated} />
       {children}
+      <Footer />
     </div>
   );
 };

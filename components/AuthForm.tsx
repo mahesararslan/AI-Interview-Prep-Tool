@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 
 import { signIn, signUp } from "@/lib/actions/auth.action";
 import FormField from "@/components/FormField";
-import { useEffect } from "react";
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -31,12 +30,6 @@ const authFormSchema = (type: FormType) => {
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
-
-  useEffect(() => {
-    console.log("id:", process.env.FIREBASE_PRIVATE_KEY); 
-    console.log("id:", process.env.FIREBASE_PROJECT_ID);
-    console.log("id:", process.env.FIREBASE_CLIENT_EMAIL);
-  }, []);
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({

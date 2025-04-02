@@ -189,6 +189,108 @@ export const feedbackSchema = z.object({
   finalAssessment: z.string(),
 });
 
+// Define the rating type
+export const RatingEnum = z.enum(["excellent", "good", "needs_improvement", "poor"]);
+
+// Define the schema for keyword analysis
+export const KeywordAnalysisSchema = z.object({
+  category: z.string(),
+  score: z.number().min(0).max(5),
+  total: z.number().default(5),
+  percentage: z.number().min(0).max(100),
+});
+
+// Define the schema for section feedback
+export const SectionFeedbackSchema = z.object({
+  title: z.string(),
+  rating: RatingEnum,
+  feedback: z.string(),
+  suggestions: z.string().optional(),
+});
+
+// Define the schema for content analysis
+export const ContentAnalysisSchema = z.object({
+  rating: RatingEnum,
+  sections: z.array(SectionFeedbackSchema),
+});
+
+// Define the schema for ATS optimization
+export const ATSOptimizationSchema = z.object({
+  score: z.number().min(0).max(100),
+  rating: RatingEnum,
+  keywordAnalysis: z.array(KeywordAnalysisSchema),
+  fileFormatFeedback: SectionFeedbackSchema,
+  formattingFeedback: SectionFeedbackSchema,
+});
+
+// Define the schema for formatting analysis
+export const FormattingAnalysisSchema = z.object({
+  rating: RatingEnum,
+  sections: z.array(SectionFeedbackSchema),
+});
+
+// Define the schema for a strength or improvement point
+export const PointSchema = z.object({
+  text: z.string(),
+});
+
+// Define the schema for a recommendation
+export const RecommendationSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  example: z.object({
+    before: z.string().optional(),
+    after: z.string().optional(),
+    tips: z.array(z.string()).optional(),
+    keywords: z.array(z.string()).optional(),
+  }),
+});
+
+// Define the main resume feedback schema
+export const ResumeFeedbackSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  createdAt: z.string(),
+  fileName: z.string(),
+  fileType: z.string(),
+  fileSize: z.number(),
+  
+  // Overall assessment
+  overallScore: z.number().min(0).max(100),
+  overallRating: RatingEnum,
+  summary: z.string(),
+  
+  // Strengths and improvements
+  strengths: z.array(PointSchema),
+  areasToImprove: z.array(PointSchema),
+  
+  // ATS compatibility
+  atsCompatibility: z.object({
+    score: z.number().min(0).max(100),
+    feedback: z.string(),
+  }),
+  
+  // Detailed analysis
+  detailedAnalysis: z.object({
+    content: ContentAnalysisSchema,
+    atsOptimization: ATSOptimizationSchema,
+    formatting: FormattingAnalysisSchema,
+  }),
+  
+  // Recommendations
+  recommendations: z.array(RecommendationSchema),
+  
+  // Industry-specific insights
+  industryInsights: z.object({
+    industry: z.string(),
+    relevantKeywords: z.array(z.string()),
+    industryTrends: z.string().optional(),
+  }).optional(),
+});
+
+// Export the type
+export type ResumeFeedback = z.infer<typeof ResumeFeedbackSchema>;
+
 export const interviewCovers = [
   "/adobe.png",
   "/amazon.png",
@@ -202,29 +304,4 @@ export const interviewCovers = [
   "/telegram.png",
   "/tiktok.png",
   "/yahoo.png",
-];
-
-export const dummyInterviews: Interview[] = [
-    {
-        id: "1",
-        userId: "user1",
-        role: "Frontend Developer",
-        type: "Technical",
-        techstack: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
-        level: "Junior",
-        questions: ["What is React?"],
-        finalized: false,
-        createdAt: "2024-03-15T10:00:00Z",
-    },
-    {
-        id: "2",
-        userId: "user1",
-        role: "Full Stack Developer",
-        type: "Mixed",
-        techstack: ["Node.js", "Express", "MongoDB", "React"],
-        level: "Senior",
-        questions: ["What is Node.js?"],
-        finalized: false,
-        createdAt: "2024-03-14T15:30:00Z",
-    },
 ];

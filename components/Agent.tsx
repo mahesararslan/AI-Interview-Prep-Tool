@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { vapi } from "@/lib/vapi.sdk"
 import { interviewer } from "@/constants"
@@ -53,6 +53,8 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
       if (message.type === "transcript" && message.transcriptType === "final") {
         const newMessage = { role: message.role, content: message.transcript }
         setMessages((prev) => [...prev, newMessage])
+
+
       }
     }
 
@@ -67,8 +69,10 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
     }
 
     const onError = (error: Error) => {
-      console.log("Error:", error)
-    }
+      setCallStatus(CallStatus.FINISHED)
+      console.error("Error:", error)
+      window.location.href = '/interviews'
+    } 
 
     vapi.on("call-start", onCallStart)
     vapi.on("call-end", onCallEnd)

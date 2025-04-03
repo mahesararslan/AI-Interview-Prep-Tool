@@ -34,7 +34,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <img src="/logo2.png" alt="Logo" className="h-14 w-auto" />
+              <img src="/logo2.png" alt="Logo" className="h-12 w-auto" />
               <span className="ml-1 text-blue-400 text-xl">.</span>
             </Link>
           </div>

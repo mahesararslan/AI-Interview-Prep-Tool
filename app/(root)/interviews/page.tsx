@@ -88,7 +88,7 @@ const Page = async () => {
                         <div className="bg-gray-800 rounded-xl p-8 text-center">
                             <p className="text-gray-300 mb-4">You haven't taken any interviews yet</p>
                             <Link
-                                href="/interviews/new"
+                                href="/interview"
                                 className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                             >
                                 <Plus size={18} className="mr-2" />

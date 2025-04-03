@@ -14,7 +14,7 @@ const Page = async () => {
 
     const [userInterviews, allInterview] = await Promise.all([
         getInterviewsByUserId(user?.id!),
-        getLatestInterviews({ userId: user?.id! }),
+        getLatestInterviews({ userId: user?.id! })
     ])
 
     //  using above code snippet add it to each interview in the userInterviews array and allInterview array
@@ -55,7 +55,7 @@ const Page = async () => {
                     </div>
 
                     <Link
-                        href="/interviews/new"
+                        href="/interview"
                         className="mt-4 md:mt-0 flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
                         <Plus size={18} className="mr-2" />

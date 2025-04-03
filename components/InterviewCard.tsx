@@ -128,12 +128,13 @@ interface InterviewCardProps {
   feedback?: boolean
 }
 
+
 const InterviewCard = ({ userId, interviewId, role, type, techstack, createdAt, feedback }: InterviewCardProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const formattedDate = formatDistanceToNow(new Date(createdAt), { addSuffix: true })
 
   // Determine if this is a past interview or an upcoming one
-  const isPastInterview = feedback !== undefined
+  const isPastInterview = feedback
 
   return (
     <Link href={feedback ? `/interview/${interviewId}/feedback` : `/interview/${interviewId}`} className="block">

@@ -68,10 +68,20 @@ const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: A
       setIsSpeaking(false)
     }
 
-    const onError = (error: Error) => {
-      setCallStatus(CallStatus.FINISHED)
-      console.error("Error:", error)
-      window.location.href = '/interviews'
+    const onError = (error: any) => {
+      if (
+        error?.errorMsg === "Meeting has ended" || 
+        (error?.error && error?.error?.type === "no-room") ||
+        (error?.error && error?.error?.msg && error?.error?.msg.includes("Exiting meeting because room was deleted"))
+      ) {
+        console.log("Call ended normally with hangup:", error?.errorMsg || error?.message)
+        // Treat this as a normal call end
+        setCallStatus(CallStatus.FINISHED)
+      } else {
+        // This is an unexpected error
+        console.error("Unexpected error:", error)
+        setCallStatus(CallStatus.FINISHED) // Or use ERROR status if available
+      }
     } 
 
     vapi.on("call-start", onCallStart)

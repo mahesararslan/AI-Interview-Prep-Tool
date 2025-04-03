@@ -116,3 +116,11 @@ export async function isAuthenticated() {
 
     return !!user;
 }
+
+export async function signOut() {
+    // Clear the session cookie
+    const cookieStore = await cookies();
+    cookieStore.delete('session')
+ 
+    return { message: "Logged out", status: 200 };
+}

@@ -1,37 +1,36 @@
-"use client";
+"use client"
 
-import { z } from "zod";
-import Link from "next/link";
-import Image from "next/image";
-import { toast } from "sonner";
-import { auth } from "@/firebase/client";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod"
+import Link from "next/link"
+import Image from "next/image"
+import { toast } from "sonner"
+import { auth } from "@/firebase/client"
+import { useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
 
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { Form } from "@/components/ui/form"
+import { Eye, EyeOff, User, Mail, Lock } from "lucide-react"
 
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { signIn, signUp } from "@/lib/actions/auth.action"
 
-import { signIn, signUp } from "@/lib/actions/auth.action";
-import FormField from "@/components/FormField";
+type FormType = "sign-in" | "sign-up"
 
 const authFormSchema = (type: FormType) => {
   return z.object({
     name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
     email: z.string().email(),
     password: z.string().min(3),
-  });
-};
+  })
+}
 
 const AuthForm = ({ type }: { type: FormType }) => {
-  const router = useRouter();
+  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
 
-  const formSchema = authFormSchema(type);
+  const formSchema = authFormSchema(type)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,123 +38,187 @@ const AuthForm = ({ type }: { type: FormType }) => {
       email: "",
       password: "",
     },
-  });
+  })
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
       if (type === "sign-up") {
-        const { name, email, password } = data;
+        const { name, email, password } = data
 
-        const userCredential = await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password)
 
         const result = await signUp({
           uid: userCredential.user.uid,
           name: name!,
           email,
           password,
-        });
+        })
 
         if (!result.success) {
-          toast.error(result.message);
-          return;
+          toast.error(result.message)
+          return
         }
 
-        toast.success("Account created successfully. Please sign in.");
-        router.push("/sign-in");
+        toast.success("Account created successfully. Please sign in.")
+        router.push("/sign-in")
       } else {
-        const { email, password } = data;
+        const { email, password } = data
 
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        const userCredential = await signInWithEmailAndPassword(auth, email, password)
 
-        const idToken = await userCredential.user.getIdToken();
+        const idToken = await userCredential.user.getIdToken()
         if (!idToken) {
-          toast.error("Sign in Failed. Please try again.");
-          return;
+          toast.error("Sign in Failed. Please try again.")
+          return
         }
 
         await signIn({
           email,
           idToken,
-        });
+        })
 
-        toast.success("Signed in successfully.");
-        router.push("/");
+        toast.success("Signed in successfully.")
+        router.push("/")
       }
     } catch (error) {
-      console.log(error);
-      toast.error(`There was an error: ${error}`);
+      console.log(error)
+      toast.error(`There was an error: ${error}`)
     }
-  };
+  }
 
-  const isSignIn = type === "sign-in";
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
+  const isSignIn = type === "sign-in"
 
   return (
-    <div className="card-border lg:min-w-[566px]">
-      <div className="flex flex-col gap-6 card py-14 px-10">
-        <div className="flex flex-row gap-2 justify-center">
-          <Image src="/logo.svg" alt="logo" height={32} width={38} />
-          <h2 className="text-primary-100">MockMate</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-gray-900 rounded-2xl shadow-xl overflow-hidden">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30 transform -skew-y-6"></div>
+          <div className="relative bg-gray-900 py-8 px-6 flex flex-col items-center">
+            <div className="flex items-center justify-center mb-2">
+                <Image src="/logo2.png" alt="MockMate" width={180} height={180} />
+            </div>
+            <p className="text-gray-400 text-center">Practice job interviews with AI</p>
+          </div>
         </div>
 
-        <h3>Practice job interviews with AI</h3>
+        <div className="p-8">
+          <h3 className="text-xl font-bold text-white text-center mb-6">
+            {isSignIn ? "Sign in to your account" : "Create a new account"}
+          </h3>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="w-full space-y-6 mt-4 form"
-          >
-            {!isSignIn && (
-              <FormField
-                control={form.control}
-                name="name"
-                label="Name"
-                placeholder="Your Name"
-                type="text"
-              />
-            )}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {!isSignIn && (
+                <div className="space-y-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+                    Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <User size={18} className="text-gray-500" />
+                    </div>
+                    <input
+                      {...form.register("name")}
+                      id="name"
+                      type="text"
+                      placeholder="Your name"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    />
+                  </div>
+                  {form.formState.errors.name && (
+                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.name.message}</p>
+                  )}
+                </div>
+              )}
 
-            <FormField
-              control={form.control}
-              name="email"
-              label="Email"
-              placeholder="Your email address"
-              type="email"
-            />
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail size={18} className="text-gray-500" />
+                  </div>
+                  <input
+                    {...form.register("email")}
+                    id="email"
+                    type="email"
+                    placeholder="Your email address"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  />
+                </div>
+                {form.formState.errors.email && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.email.message}</p>
+                )}
+              </div>
 
-            <FormField
-              control={form.control}
-              name="password"
-              label="Password"
-              placeholder="Enter your password"
-              type="password"
-            />
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock size={18} className="text-gray-500" />
+                  </div>
+                  <input
+                    {...form.register("password")}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="block w-full pl-10 pr-10 py-2 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      className="text-gray-500 hover:text-gray-300 focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+                {form.formState.errors.password && (
+                  <p className="text-sm text-red-500 mt-1">{form.formState.errors.password.message}</p>
+                )}
+              </div>
 
-            <Button className="btn" type="submit">
-              {isSignIn ? "Sign In" : "Create an Account"}
-            </Button>
-          </form>
-        </Form>
+              {isSignIn && (
+                <div className="text-right">
+                  <Link href="/sign-up" className="text-sm text-blue-500 hover:text-blue-400">
+                    Forgot your password?
+                  </Link>
+                </div>
+              )}
 
-        <p className="text-center">
-          {isSignIn ? "No account yet?" : "Have an account already?"}
-          <Link
-            href={!isSignIn ? "/sign-in" : "/sign-up"}
-            className="font-bold text-user-primary ml-1"
-          >
-            {!isSignIn ? "Sign In" : "Sign Up"}
-          </Link>
-        </p>
+              <button
+                type="submit"
+                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              >
+                {isSignIn ? "Sign In" : "Create Account"}
+              </button>
+            </form>
+          </Form>
+
+          <div className="mt-8 pt-6 border-t border-gray-800">
+            <p className="text-center text-gray-400">
+              {isSignIn ? "Don't have an account?" : "Already have an account?"}
+              <Link
+                href={isSignIn ? "/sign-up" : "/sign-in"}
+                className="ml-2 text-blue-500 hover:text-blue-400 font-medium"
+              >
+                {isSignIn ? "Sign Up" : "Sign In"}
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AuthForm;
+export default AuthForm
+

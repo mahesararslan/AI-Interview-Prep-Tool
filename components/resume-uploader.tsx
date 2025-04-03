@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Upload, File, X, Check, Loader2, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
@@ -13,7 +13,21 @@ export default function ResumeUploader() {
   const [uploadComplete, setUploadComplete] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resumeId, setResumeId] = useState<string | null>(null)
+  const [status, setStatus] = useState("Uploading...");
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isUploading) {
+      setStatus("Uploading...");
+      const timer = setTimeout(() => {
+        setStatus("Analysing...");
+      }, 1000);
+
+      return () => clearTimeout(timer); // Cleanup timeout on unmount or `isUploading` change
+    } else {
+      setStatus("Upload Resume");
+    }
+  }, [isUploading]);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -81,11 +95,9 @@ export default function ResumeUploader() {
         if (!response.ok) {
             throw new Error(data.error || "Failed to upload resume")
         }
-        console.log("Resume feedback:", data.feedback)
-        // store in the local storage
+        // localStorage.removeItem("resumeFeedback")
         localStorage.setItem("resumeFeedback", JSON.stringify(data.feedback))
-
-      // Simulate a successful response
+      
       setResumeId(data.feedback.id);
       setUploadComplete(true)
     } catch (err) {
@@ -164,14 +176,14 @@ export default function ResumeUploader() {
           <button
             onClick={handleUpload}
             disabled={!file || isUploading}
-            className={`w-full py-3 px-4 rounded-lg font-medium flex items-center justify-center transition-colors ${
+            className={`w-full cursor-pointer py-3 px-4 rounded-lg font-medium flex items-center justify-center transition-colors ${
               !file ? "bg-gray-700 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
             {isUploading ? (
               <>
                 <Loader2 size={20} className="mr-2 animate-spin" />
-                Uploading...
+                {status}
               </>
             ) : (
               "Upload Resume"
@@ -188,7 +200,7 @@ export default function ResumeUploader() {
             Your resume has been uploaded successfully and is now being analyzed by our AI system.
           </p>
           <Link
-            href={`/services/resume/${resumeId}`}
+            href={`/resume/${resumeId}`}
             className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             View Analysis

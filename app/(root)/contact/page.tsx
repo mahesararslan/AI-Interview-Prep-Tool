@@ -1,6 +1,7 @@
 
 import Link from "next/link"
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react"
+import ContactButton from "@/components/contact-button"
 
 export default function Contact() {
   return (
@@ -87,13 +88,7 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors w-full justify-center"
-                  >
-                    <Send size={18} className="mr-2" />
-                    Send Message
-                  </button>
+                  <ContactButton />
                 </div>
               </form>
             </div>
@@ -109,7 +104,7 @@ export default function Contact() {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-300">Email</p>
-                      <p className="text-base text-white">support@mockmate.com</p>
+                      <p className="text-base text-white">mahesararslan1998@gmail.com</p>
                     </div>
                   </div>
 
@@ -119,7 +114,7 @@ export default function Contact() {
                     </div>
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-300">Phone</p>
-                      <p className="text-base text-white">+1 (555) 123-4567</p>
+                      <p className="text-base text-white">+92 3202705737</p>
                     </div>
                   </div>
 
@@ -130,11 +125,11 @@ export default function Contact() {
                     <div className="ml-3">
                       <p className="text-sm font-medium text-gray-300">Address</p>
                       <p className="text-base text-white">
-                        123 Innovation Drive
+                        Park Road
                         <br />
-                        San Francisco, CA 94103
+                        Islamabad,
                         <br />
-                        United States
+                        Pakistan
                       </p>
                     </div>
                   </div>
@@ -183,26 +178,6 @@ export default function Contact() {
                     </p>
                   </div>
                 </div>
-
-                <div className="mt-6">
-                  <Link href="/faq" className="text-blue-500 hover:text-blue-400 font-medium">
-                    View all FAQs →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map Section */}
-      <section className="py-20 bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
-            <div className="aspect-w-16 aspect-h-9 h-96">
-              {/* This would be a real map in production */}
-              <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                <p className="text-gray-400">Interactive Map Would Be Here</p>
               </div>
             </div>
           </div>

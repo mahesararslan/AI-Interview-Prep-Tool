@@ -168,8 +168,12 @@ ${resumeText}`;
             system: "You are a professional resume reviewer analyzing a candidate's resume.",
         });
 
+        const feedback = object;
+        feedback.id = crypto.randomUUID(); // Generate a unique ID for the feedback
+        feedback.createdAt = new Date().toISOString(); // Add a timestamp
+
         console.log("Generated feedback:", object);
-        return NextResponse.json({ feedback: object }, { status: 200 });
+        return NextResponse.json({ feedback }, { status: 200 });
     } catch (error) {
         console.error("Error processing resume:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,61 +1,53 @@
+
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { FileText, CheckCircle, AlertTriangle, BarChart, ChevronDown, ChevronUp } from "lucide-react"
 
-// Type definitions for the feedback data
-type FeedbackData = {
-  detailedAnalysis: {
-    content: {
-      rating: string;
-      sections: Array<{
-        title: string;
-        rating: string;
-        feedback: string;
-        suggestions: string;
-      }>;
-    };
-    atsOptimization: {
-      rating: string;
-      keywordAnalysis: Array<{
-        category: string;
-        score: number;
-        total: number;
-        percentage: number;
-      }>;
-      fileFormatFeedback: {
-        title: string;
-        rating: string;
-        feedback: string;
-      };
-      formattingFeedback: {
-        title: string;
-        rating: string;
-        feedback: string;
-      };
-    };
-    formatting: {
-      rating: string;
-      sections: Array<{
-        title: string;
-        rating: string;
-        feedback: string;
-      }>;
-    };
-  };
-};
+interface SectionFeedback {
+  title: string
+  rating: "excellent" | "good" | "needs_improvement" | "poor"
+  feedback: string
+  suggestions?: string
+}
 
-export default function ResumeAnalysis() {
+interface KeywordAnalysis {
+  category: string
+  score: number
+  total: number
+  percentage: number
+}
+
+interface ContentAnalysis {
+  rating: "excellent" | "good" | "needs_improvement" | "poor"
+  sections: SectionFeedback[]
+}
+
+interface ATSOptimization {
+  score: number
+  rating: "excellent" | "good" | "needs_improvement" | "poor"
+  keywordAnalysis: KeywordAnalysis[]
+  fileFormatFeedback: SectionFeedback
+  formattingFeedback: SectionFeedback
+}
+
+interface FormattingAnalysis {
+  rating: "excellent" | "good" | "needs_improvement" | "poor"
+  sections: SectionFeedback[]
+}
+
+interface DetailedAnalysis {
+  content: ContentAnalysis
+  atsOptimization: ATSOptimization
+  formatting: FormattingAnalysis
+}
+
+interface ResumeAnalysisProps {
+  feedbackData?: DetailedAnalysis
+}
+
+export default function ResumeAnalysis({ feedbackData }: ResumeAnalysisProps) {
   const [activeSection, setActiveSection] = useState<string | null>("content")
-  const [feedback, setFeedback] = useState<FeedbackData | null>(null)
-
-  useEffect(() => {
-    // Get feedback data from localStorage
-    const storedFeedback = localStorage.getItem("resumeFeedback")
-    if (storedFeedback) {
-      setFeedback(JSON.parse(storedFeedback))
-    }
-  }, [])
 
   const toggleSection = (section: string) => {
     if (activeSection === section) {
@@ -65,42 +57,76 @@ export default function ResumeAnalysis() {
     }
   }
 
-  const getRatingColor = (rating: string) => {
-    switch (rating.toLowerCase()) {
-      case "excellent":
-        return "bg-green-500 text-green-500"
-      case "good":
-        return "bg-green-500 text-green-500"
-      case "needs_improvement":
-        return "bg-yellow-500 text-yellow-500"
-      case "poor":
-        return "bg-red-500 text-red-500"
-      default:
-        return "bg-gray-500 text-gray-500"
-    }
-  }
-
-  const getRatingIcon = (rating: string) => {
-    switch (rating.toLowerCase()) {
-      case "excellent":
-      case "good":
-        return <CheckCircle size={18} className="text-green-500 mt-0.5 flex-shrink-0" />
-      case "needs_improvement":
-        return <AlertTriangle size={18} className="text-yellow-500 mt-0.5 flex-shrink-0" />
-      case "poor":
-        return <AlertTriangle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
-      default:
-        return <CheckCircle size={18} className="text-gray-500 mt-0.5 flex-shrink-0" />
-    }
-  }
-
-  if (!feedback) {
+  // If no feedback data is provided, return null or a placeholder
+  if (!feedbackData) {
     return (
       <div className="bg-gray-900 rounded-2xl p-8 mb-8">
         <h2 className="text-xl font-bold text-white mb-6">Detailed Analysis</h2>
-        <p className="text-gray-400">Loading feedback data...</p>
+        <p className="text-gray-400 text-center py-8">No detailed analysis available</p>
       </div>
     )
+  }
+
+  // Helper function to get rating color
+  const getRatingColor = (rating: string) => {
+    switch (rating) {
+      case "excellent":
+        return "text-green-500"
+      case "good":
+        return "text-blue-500"
+      case "needs_improvement":
+        return "text-yellow-500"
+      case "poor":
+        return "text-red-500"
+      default:
+        return "text-gray-400"
+    }
+  }
+
+  // Helper function to get rating badge color
+  const getRatingBadgeColor = (rating: string) => {
+    switch (rating) {
+      case "excellent":
+        return "bg-green-500"
+      case "good":
+        return "bg-blue-500"
+      case "needs_improvement":
+        return "bg-yellow-500"
+      case "poor":
+        return "bg-red-500"
+      default:
+        return "bg-gray-500"
+    }
+  }
+
+  // Helper function to get rating icon
+  const getRatingIcon = (rating: string) => {
+    switch (rating) {
+      case "excellent":
+      case "good":
+        return <CheckCircle size={18} className={getRatingColor(rating)} />
+      case "needs_improvement":
+      case "poor":
+        return <AlertTriangle size={18} className={getRatingColor(rating)} />
+      default:
+        return null
+    }
+  }
+
+  // Helper function to get rating label
+  const getRatingLabel = (rating: string) => {
+    switch (rating) {
+      case "excellent":
+        return "Excellent"
+      case "good":
+        return "Good"
+      case "needs_improvement":
+        return "Needs Improvement"
+      case "poor":
+        return "Poor"
+      default:
+        return "Unknown"
+    }
   }
 
   return (
@@ -119,9 +145,11 @@ export default function ResumeAnalysis() {
           </div>
           <div className="flex items-center">
             <div className="mr-4">
-              <span className={`inline-block w-2 h-2 rounded-full ${getRatingColor(feedback.detailedAnalysis.content.rating).split(' ')[0]} mr-1`}></span>
-              <span className={`${getRatingColor(feedback.detailedAnalysis.content.rating).split(' ')[1]} font-medium capitalize`}>
-                {feedback.detailedAnalysis.content.rating.replace('_', ' ')}
+              <span
+                className={`inline-block w-2 h-2 rounded-full ${getRatingBadgeColor(feedbackData.content.rating)} mr-1`}
+              ></span>
+              <span className={getRatingColor(feedbackData.content.rating)}>
+                {getRatingLabel(feedbackData.content.rating)}
               </span>
             </div>
             {activeSection === "content" ? (
@@ -135,7 +163,7 @@ export default function ResumeAnalysis() {
         {activeSection === "content" && (
           <div className="mt-4 pl-9">
             <div className="space-y-4">
-              {feedback.detailedAnalysis.content.sections.map((section, index) => (
+              {feedbackData.content.sections.map((section, index) => (
                 <div key={index} className="bg-gray-800 rounded-lg p-4">
                   <div className="flex items-start">
                     {getRatingIcon(section.rating)}
@@ -143,9 +171,7 @@ export default function ResumeAnalysis() {
                       <h4 className="text-white font-medium">{section.title}</h4>
                       <p className="text-gray-300 text-sm mt-1">{section.feedback}</p>
                       {section.suggestions && (
-                        <p className="text-gray-400 text-xs mt-2">
-                          <span className="font-semibold">Suggestion:</span> {section.suggestions}
-                        </p>
+                        <p className="text-gray-400 text-sm mt-2 italic">Suggestion: {section.suggestions}</p>
                       )}
                     </div>
                   </div>
@@ -168,9 +194,11 @@ export default function ResumeAnalysis() {
           </div>
           <div className="flex items-center">
             <div className="mr-4">
-              <span className={`inline-block w-2 h-2 rounded-full ${getRatingColor(feedback.detailedAnalysis.atsOptimization.rating).split(' ')[0]} mr-1`}></span>
-              <span className={`${getRatingColor(feedback.detailedAnalysis.atsOptimization.rating).split(' ')[1]} font-medium capitalize`}>
-                {feedback.detailedAnalysis.atsOptimization.rating.replace('_', ' ')}
+              <span
+                className={`inline-block w-2 h-2 rounded-full ${getRatingBadgeColor(feedbackData.atsOptimization.rating)} mr-1`}
+              ></span>
+              <span className={getRatingColor(feedbackData.atsOptimization.rating)}>
+                {getRatingLabel(feedbackData.atsOptimization.rating)}
               </span>
             </div>
             {activeSection === "ats" ? (
@@ -187,19 +215,25 @@ export default function ResumeAnalysis() {
               <div className="bg-gray-800 rounded-lg p-4">
                 <h4 className="text-white font-medium mb-3">Keyword Analysis</h4>
                 <div className="space-y-3">
-                  {feedback.detailedAnalysis.atsOptimization.keywordAnalysis.map((keyword, index) => (
+                  {feedbackData.atsOptimization.keywordAnalysis.map((keyword, index) => (
                     <div key={index}>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm text-gray-300">{keyword.category}</span>
-                        <span className="text-sm text-gray-300">{keyword.score}/{keyword.total}</span>
+                        <span className="text-sm text-gray-300">
+                          {keyword.score}/{keyword.total}
+                        </span>
                       </div>
                       <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div 
+                        <div
                           className={`h-2 rounded-full ${
-                            keyword.percentage >= 80 ? 'bg-green-500' :
-                            keyword.percentage >= 50 ? 'bg-yellow-500' :
-                            'bg-red-500'
-                          }`} 
+                            keyword.percentage >= 80
+                              ? "bg-green-500"
+                              : keyword.percentage >= 60
+                                ? "bg-blue-500"
+                                : keyword.percentage >= 40
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                          }`}
                           style={{ width: `${keyword.percentage}%` }}
                         ></div>
                       </div>
@@ -210,24 +244,34 @@ export default function ResumeAnalysis() {
 
               <div className="bg-gray-800 rounded-lg p-4">
                 <div className="flex items-start">
-                  {getRatingIcon(feedback.detailedAnalysis.atsOptimization.fileFormatFeedback.rating)}
+                  {getRatingIcon(feedbackData.atsOptimization.fileFormatFeedback.rating)}
                   <div className="ml-3">
-                    <h4 className="text-white font-medium">{feedback.detailedAnalysis.atsOptimization.fileFormatFeedback.title}</h4>
+                    <h4 className="text-white font-medium">{feedbackData.atsOptimization.fileFormatFeedback.title}</h4>
                     <p className="text-gray-300 text-sm mt-1">
-                      {feedback.detailedAnalysis.atsOptimization.fileFormatFeedback.feedback}
+                      {feedbackData.atsOptimization.fileFormatFeedback.feedback}
                     </p>
+                    {feedbackData.atsOptimization.fileFormatFeedback.suggestions && (
+                      <p className="text-gray-400 text-sm mt-2 italic">
+                        Suggestion: {feedbackData.atsOptimization.fileFormatFeedback.suggestions}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="bg-gray-800 rounded-lg p-4">
                 <div className="flex items-start">
-                  {getRatingIcon(feedback.detailedAnalysis.atsOptimization.formattingFeedback.rating)}
+                  {getRatingIcon(feedbackData.atsOptimization.formattingFeedback.rating)}
                   <div className="ml-3">
-                    <h4 className="text-white font-medium">{feedback.detailedAnalysis.atsOptimization.formattingFeedback.title}</h4>
+                    <h4 className="text-white font-medium">{feedbackData.atsOptimization.formattingFeedback.title}</h4>
                     <p className="text-gray-300 text-sm mt-1">
-                      {feedback.detailedAnalysis.atsOptimization.formattingFeedback.feedback}
+                      {feedbackData.atsOptimization.formattingFeedback.feedback}
                     </p>
+                    {feedbackData.atsOptimization.formattingFeedback.suggestions && (
+                      <p className="text-gray-400 text-sm mt-2 italic">
+                        Suggestion: {feedbackData.atsOptimization.formattingFeedback.suggestions}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -251,9 +295,11 @@ export default function ResumeAnalysis() {
           </div>
           <div className="flex items-center">
             <div className="mr-4">
-              <span className={`inline-block w-2 h-2 rounded-full ${getRatingColor(feedback.detailedAnalysis.formatting.rating).split(' ')[0]} mr-1`}></span>
-              <span className={`${getRatingColor(feedback.detailedAnalysis.formatting.rating).split(' ')[1]} font-medium capitalize`}>
-                {feedback.detailedAnalysis.formatting.rating.replace('_', ' ')}
+              <span
+                className={`inline-block w-2 h-2 rounded-full ${getRatingBadgeColor(feedbackData.formatting.rating)} mr-1`}
+              ></span>
+              <span className={getRatingColor(feedbackData.formatting.rating)}>
+                {getRatingLabel(feedbackData.formatting.rating)}
               </span>
             </div>
             {activeSection === "formatting" ? (
@@ -267,13 +313,16 @@ export default function ResumeAnalysis() {
         {activeSection === "formatting" && (
           <div className="mt-4 pl-9">
             <div className="space-y-4">
-              {feedback.detailedAnalysis.formatting.sections.map((section, index) => (
+              {feedbackData.formatting.sections.map((section, index) => (
                 <div key={index} className="bg-gray-800 rounded-lg p-4">
                   <div className="flex items-start">
                     {getRatingIcon(section.rating)}
                     <div className="ml-3">
                       <h4 className="text-white font-medium">{section.title}</h4>
                       <p className="text-gray-300 text-sm mt-1">{section.feedback}</p>
+                      {section.suggestions && section.suggestions !== "N/A" && (
+                        <p className="text-gray-400 text-sm mt-2 italic">Suggestion: {section.suggestions}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -285,3 +334,4 @@ export default function ResumeAnalysis() {
     </div>
   )
 }
+

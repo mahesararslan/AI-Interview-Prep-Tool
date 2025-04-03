@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Menu, X, User } from 'lucide-react';
+import { redirect } from "next/navigation";
+import { sign } from "crypto";
+import { signOut } from "@/lib/actions/auth.action";
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -31,11 +34,11 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-                <img src="/logo2.png" alt="Logo" className="h-14 w-auto" />
+              <img src="/logo2.png" alt="Logo" className="h-14 w-auto" />
               <span className="ml-1 text-blue-400 text-xl">.</span>
             </Link>
           </div>
-          
+
           {/* Desktop menu */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-8">
@@ -48,7 +51,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
               <Link href="/interviews" className="text-gray-300 hover:text-white transition-colors">
                 Interviews
               </Link>
-              
+
               {isLoggedIn ? (
                 <div className="relative group">
                   <button className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
@@ -58,22 +61,24 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
                     <Link href="/profile" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
                       Profile
                     </Link>
-                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      Settings
-                    </Link>
-                    <button className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                    <button className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+                      onClick={() => {
+                        document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+                        signOut();
+                      }}
+                    >
                       Sign out
                     </button>
                   </div>
                 </div>
               ) : (
-                <Link href="/signin" className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+                <Link href="/sign-in" className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors">
                   Sign in
                 </Link>
               )}
             </div>
           </div>
-          
+
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
@@ -90,51 +95,49 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
       {isMenuOpen && (
         <div className="md:hidden bg-gray-900 shadow-lg">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link 
-              href="/services" 
+            <Link
+              href="/services"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setIsMenuOpen(false)}
             >
               Services
             </Link>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/contact"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setIsMenuOpen(false)}
             >
               Contact us
             </Link>
-            <Link 
-              href="/interviews" 
+            <Link
+              href="/interviews"
               className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
               onClick={() => setIsMenuOpen(false)}
             >
               Interviews
             </Link>
-            
+
             {isLoggedIn ? (
               <div className="px-3 py-2">
-                <Link 
-                  href="/profile" 
+                <Link
+                  href="/profile"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Profile
                 </Link>
-                <Link 
-                  href="/settings" 
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
-                  onClick={() => setIsMenuOpen(false)}
+                <button className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+                  onClick={() => {
+                    document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+                    signOut();
+                  }}
                 >
-                  Settings
-                </Link>
-                <button className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">
                   Sign out
                 </button>
               </div>
             ) : (
-              <Link 
-                href="/signin" 
+              <Link
+                href="/sign-in"
                 className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700"
                 onClick={() => setIsMenuOpen(false)}
               >

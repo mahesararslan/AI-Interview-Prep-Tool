@@ -8,16 +8,13 @@ const Page = async () => {
   if (!user) redirect("/sign-in");
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <section className="py-20">
-
+    <div className="py-20 bg-gray-950 text-white">
       <Agent
         userName={user?.name!}
         userId={user?.id}
         // profileImage={user?.profileURL}
         type="generate"
       />
-      </section>
     </div>
   );
 };

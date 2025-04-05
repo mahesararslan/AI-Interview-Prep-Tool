@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Upload, File, X, Check, Loader2, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { getResumeFeedback } from "@/lib/actions/general.action"
 
 export default function ResumeUploader() {
   const [file, setFile] = useState<File | null>(null)
@@ -16,18 +17,18 @@ export default function ResumeUploader() {
   const [status, setStatus] = useState("Uploading...");
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (isUploading) {
-      setStatus("Uploading...");
-      const timer = setTimeout(() => {
-        setStatus("Analysing...");
-      }, 1000);
+  // useEffect(() => {
+  //   if (isUploading) {
+  //     setStatus("Uploading...");
+  //     const timer = setTimeout(() => {
+  //       setStatus("Analysing...");
+  //     }, 1000);
 
-      return () => clearTimeout(timer); // Cleanup timeout on unmount or `isUploading` change
-    } else {
-      setStatus("Upload Resume");
-    }
-  }, [isUploading]);
+  //     return () => clearTimeout(timer); // Cleanup timeout on unmount or `isUploading` change
+  //   } else {
+  //     setStatus("Upload Resume");
+  //   }
+  // }, [isUploading]);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -83,7 +84,7 @@ export default function ResumeUploader() {
     setError(null)
 
     try {
-
+      setStatus("Uploading...")
       // In a real implementation, you would upload the file to your server here
       const formData = new FormData();
       formData.append('resume', file);
@@ -95,15 +96,19 @@ export default function ResumeUploader() {
         if (!response.ok) {
             throw new Error(data.error || "Failed to upload resume")
         }
+
+        setStatus("Analysing...");
+        const resumeFeedBack = await getResumeFeedback(data.resumeText);
         // localStorage.removeItem("resumeFeedback")
-        localStorage.setItem("resumeFeedback", JSON.stringify(data.feedback))
+        localStorage.setItem("resumeFeedback", JSON.stringify(resumeFeedBack))
       
-      setResumeId(data.feedback.id);
+      setResumeId(resumeFeedBack?.id || "123");;
       setUploadComplete(true)
     } catch (err) {
       setError("Failed to upload resume. Please try again.")
     } finally {
       setIsUploading(false)
+      setStatus("Upload Resume")
     }
   }
 

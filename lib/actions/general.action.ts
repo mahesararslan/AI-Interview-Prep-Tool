@@ -124,125 +124,32 @@ export async function getInterviewsByUserId(
   })) as Interview[];
 }
 
-interface GetResumeFeedbackParams {
-  resumeText: string;
-}
-
 // use gemini to review resume and give feedback/improvements to be made and give ats score
 // a pdf is provided by the user and the text is extracted from it
-export async function getResumeFeedback(params: GetResumeFeedbackParams) {
-  const { resumeText } = params;
-  const prompt = `You are an expert resume analyst with years of experience in HR and recruitment. I need you to analyze the resume I'm about to provide and generate detailed, actionable feedback in a specific JSON format.
-
-Please analyze the resume for:
-1. Content quality and relevance
-2. ATS (Applicant Tracking System) compatibility
-3. Formatting and design
-4. Industry-specific optimization
-
-Generate a comprehensive analysis in the following JSON structure:
-
-{
-  "overallScore": [0-100 score],
-  "overallRating": ["excellent", "good", "needs_improvement", or "poor"],
-  "summary": "A 2-3 sentence overview of the resume's strengths and weaknesses",
-  
-  "strengths": [
-    { "text": "Specific strength 1" },
-    { "text": "Specific strength 2" },
-    { "text": "Specific strength 3" }
-  ],
-  
-  "areasToImprove": [
-    { "text": "Specific area to improve 1" },
-    { "text": "Specific area to improve 2" },
-    { "text": "Specific area to improve 3" }
-  ],
-  
-  "atsCompatibility": {
-    "score": [0-100 score],
-    "feedback": "1-2 sentences about ATS compatibility"
-  },
-  
-  "detailedAnalysis": {
-    "content": {
-      "rating": ["excellent", "good", "needs_improvement", or "poor"],
-      "sections": [
-        {
-          "title": "Professional Summary",
-          "rating": ["excellent", "good", "needs_improvement", or "poor"],
-          "feedback": "Detailed feedback about this section",
-          "suggestions": "Specific suggestions for improvement"
-        },
-        // Include similar objects for Work Experience, Skills, Education, etc.
-      ]
-    },
-    
-    "atsOptimization": {
-      "score": [0-100 score],
-      "rating": ["excellent", "good", "needs_improvement", or "poor"],
-      "keywordAnalysis": [
-        {
-          "category": "Category name (e.g., Technical Skills)",
-          "score": [0-5 score],
-          "total": 5,
-          "percentage": [0-100 percentage]
-        },
-        // Include 3-5 keyword categories
-      ],
-      "fileFormatFeedback": {
-        "title": "File Format",
-        "rating": ["excellent", "good", "needs_improvement", or "poor"],
-        "feedback": "Feedback about the file format"
-      },
-      "formattingFeedback": {
-        "title": "Formatting",
-        "rating": ["excellent", "good", "needs_improvement", or "poor"],
-        "feedback": "Feedback about the formatting for ATS"
-      }
-    },
-    
-    "formatting": {
-      "rating": ["excellent", "good", "needs_improvement", or "poor"],
-      "sections": [
-        {
-          "title": "Layout",
-          "rating": ["excellent", "good", "needs_improvement", or "poor"],
-          "feedback": "Feedback about the layout"
-        },
-        // Include similar objects for Typography, Consistency, Length, etc.
-      ]
-    }
-  },
-  
-  "recommendations": [
-    {
-      "title": "Add Quantifiable Achievements",
-      "description": "Detailed explanation of this recommendation",
-      "example": {
-        "before": "Example of current content",
-        "after": "Example of improved content",
-        "tips": ["Tip 1", "Tip 2", "Tip 3"]
-      }
-    },
-    // Include 2-3 more recommendations
-    {
-      "title": "Optimize for ATS",
-      "description": "Explanation about keyword optimization",
-      "example": {
-        "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
-      }
-    }
-  ],
-  
-  "industryInsights": {
-    "industry": "[INDUSTRY]",
-    "relevantKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
-    "industryTrends": "Brief insights about current industry trends relevant to the resume"
+export async function getResumeFeedback(resumeText: string) {
+  if(!resumeText) {
+    console.error("No resume text provided");
+    return null;
   }
-}
+  const prompt = `You are a professional resume reviewer with HR and ATS expertise. Analyze the following resume and return detailed, structured feedback in JSON format. Include:
 
-Be specific, actionable, and constructive in your feedback. Focus on providing insights that will genuinely help the candidate improve their resume and increase their chances of landing interviews.
+Overall score and rating (0–100, excellent/good/needs_improvement/poor)
+
+2–3 sentence summary
+
+Strengths (3) and areas to improve (3)
+
+ATS compatibility: score and short feedback
+
+Detailed analysis for sections (e.g., Summary, Experience, Skills) with ratings, feedback, and suggestions
+
+ATS optimization: keyword categories with score (0–5), file format & formatting feedback
+
+Formatting review: layout, typography, consistency, etc.
+
+2–3 recommendations with examples and tips
+
+Industry insights: relevant keywords and trends
 
 Here is the resume to analyze:
 
@@ -259,6 +166,11 @@ ${resumeText}`;
         "You are a professional resume reviewer analyzing a candidate's resume. Your task is to evaluate the resume based on structured categories",
     });
 
+    // generate a id using uid
+    const id = Math.random().toString(36).substring(2, 15);
+    object.id = id;
+    object.createdAt = new Date().toISOString();
+
     console.log("Generated resume feedback:", object);
     return object;
   } catch (error) {
@@ -266,4 +178,3 @@ ${resumeText}`;
     return null;
   }
 }
-

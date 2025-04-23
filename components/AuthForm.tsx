@@ -29,6 +29,8 @@ const authFormSchema = (type: FormType) => {
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   const formSchema = authFormSchema(type)
   const form = useForm<z.infer<typeof formSchema>>({
@@ -41,6 +43,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
   })
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setIsLoading(true)
+    setAuthError(null)
+    
     try {
       if (type === "sign-up") {
         const { name, email, password } = data
@@ -56,6 +61,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
         if (!result.success) {
           toast.error(result.message)
+          setIsLoading(false)
           return
         }
 
@@ -69,6 +75,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
         const idToken = await userCredential.user.getIdToken()
         if (!idToken) {
           toast.error("Sign in Failed. Please try again.")
+          setIsLoading(false)
           return
         }
 
@@ -80,9 +87,15 @@ const AuthForm = ({ type }: { type: FormType }) => {
         toast.success("Signed in successfully.")
         router.push("/")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error)
-      toast.error(`There was an error: ${error}`)
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        setAuthError("Invalid email or password")
+      } else {
+        toast.error(`There was an error: ${error.message}`)
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -110,6 +123,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
             {isSignIn ? "Sign in to your account" : "Create a new account"}
           </h3>
 
+          {authError && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-md text-red-500 text-center">
+              {authError}
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {!isSignIn && (
@@ -127,6 +146,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                       type="text"
                       placeholder="Your name"
                       className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                      disabled={isLoading}
                     />
                   </div>
                   {form.formState.errors.name && (
@@ -149,6 +169,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                     type="email"
                     placeholder="Your email address"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    disabled={isLoading}
                   />
                 </div>
                 {form.formState.errors.email && (
@@ -170,12 +191,14 @@ const AuthForm = ({ type }: { type: FormType }) => {
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     className="block w-full pl-10 pr-10 py-2 border border-gray-700 rounded-md bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                    disabled={isLoading}
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
                       className="text-gray-500 hover:text-gray-300 focus:outline-none"
+                      disabled={isLoading}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -196,9 +219,16 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
               >
-                {isSignIn ? "Sign In" : "Create Account"}
+                {isLoading
+                  ? isSignIn
+                    ? "Signing In..."
+                    : "Signing Up..."
+                  : isSignIn
+                    ? "Sign In"
+                    : "Create Account"}
               </button>
             </form>
           </Form>
@@ -221,4 +251,3 @@ const AuthForm = ({ type }: { type: FormType }) => {
 }
 
 export default AuthForm
-
